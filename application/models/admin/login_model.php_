@@ -1,0 +1,200 @@
+                                <?php //if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+
+class Login_model extends CI_Model {
+
+	//function for Email Exist
+	function checkmail($email,$password)
+	{
+		$this->db->where('email',$email);
+		$this->db->where('password',$password);
+		$q=$this->db->get('security');                            //databasename
+		$res=$q->row_array();
+		//echo "<pre>";print_r($res);die;
+		if($q->num_rows()>0)
+		{
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	
+	//Function Email Exist
+	function forgotcheckmail($email)
+	{
+		$this->db->where('email',$email);
+		$q=$this->db->get('user');                            //databasename
+		$res=$q->row_array();
+		if($q->num_rows()>0)
+		{
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	
+	//function for Signup
+	function login()
+	{              
+		/****************Query section*****************************/
+		
+		 $email=$this->input->post('email');
+		$password=$this->input->post('password');
+		
+		$query = $this->db->get_where('security',array("email"=>$email,"password"=>$password,"type"=>'admin'));
+		
+		
+		/********************Query result condition*******************/
+		if($query->num_rows())
+        {			
+			$dataRes = $query->row();
+				$user_data=array(
+					'id'=>$dataRes->id,
+					'username'=>$dataRes->username,
+					'image'=>$dataRes->image,
+					'email'=>$dataRes->email
+				);
+				$this->session->set_userdata('user_data', $user_data);//session
+				return true;
+		}
+		else
+		{
+			return false;
+		}
+		/********************Query result condition*******************/
+	}
+	
+	//Function for Uodate Password 
+	function updatepass($temp_pass,$mail)
+	{
+		$this->db->where("email",$mail);
+        $this->db->update("user",array("password"=>$temp_pass));
+	}
+	//Function For Manage Visitors
+	function managevisitors()
+	{
+		 //$this->db->where('id',$id);
+		$q=$this->db->get('visitors');                            //databasename
+		$res=$q->result_array();
+		echo "<pre>";print_r($res);die;
+		if($q->num_rows()>0)
+		{
+			return $res;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	
+	//Function For Manage Security
+	function manageusers()
+	{
+		$this->db->where('type','security');
+		$q=$this->db->get('security');                            //databasename
+		$res=$q->result_array();
+		if($q->num_rows()>0)
+		{
+			return $res;
+		}
+		else
+		{
+			return 0;
+		}
+	}	
+	
+	function adduser()
+	{
+		$data=array('username'=>$this->input->post('username'),
+		             'password'=>$this->input->post('password'),
+					'age'=>$this->input->post('age'),
+					'address'=>$this->input->post('address'),
+					'gender'=>$this->input->post('gender'),
+					'type'=>'security',
+					'image'=>$_FILES['image']['name']
+					);	
+			if(!empty($_FILES['image']['name'])) 
+			{				
+					$image_name		=	$_FILES['image']['name'];
+					move_uploaded_file($_FILES['image']['tmp_name'],$_SERVER['DOCUMENT_ROOT']."/public/uploads/images".$image_name);
+			}
+		  	
+		$this->db->insert('security',$data);
+		if($this->db->insert_id()>0)
+		{
+			$id=$this->db->insert_id();
+			return $id;
+			$this->session->set_flashdata('success','<div class="notyfy_message"><span class="notyfy_text">Successfully Added</div></div>');
+		}
+		else
+		{
+			return 0;
+			 $this->session->set_flashdata('success','<div class="notyfy_message"><span class="notyfy_text">Added Unsuccess </div></div>');
+		}
+	}
+	
+	function deleteusers($id)
+	{
+		if($id>0)
+		{
+		$this->db->where('id',$id);
+		$q=$this->db->delete('security');                            //databasename
+		 return 1;
+		}
+		else
+		{
+				return 0;
+		}
+	}	
+
+/*******************************************Functions for Manage Owners**************************************************************************/
+	//function To add Owners
+	function addowners()
+	{
+		$data=array('name'=>$this->input->post('name'),
+		             'flatno'=>$this->input->post('flatno'),
+					'age'=>$this->input->post('age'),
+					'floorno'=>$this->input->post('floorno'),
+                                          'gender'=>$this->input->post('gender'),
+					'image'=>$_FILES['image']['name']
+					);	
+			if(!empty($_FILES['image']['name'])) 
+			{				
+					$image_name		=	$_FILES['image']['name'];
+					move_uploaded_file($_FILES['image']['tmp_name'],$_SERVER['DOCUMENT_ROOT']."/public/uploads/images".$image_name);
+			}
+		  	
+		$this->db->insert('flatowners',$data);
+		if($this->db->insert_id()>0)
+		{
+			$id=$this->db->insert_id();
+			return $id;
+			$this->session->set_flashdata('success','<div class="notyfy_message"><span class="notyfy_text">Successfully Added</div></div>');
+		}
+		else
+		{
+			return 0;
+			 $this->session->set_flashdata('success','<div class="notyfy_message"><span class="notyfy_text">Added Unsuccess </div></div>');
+		}
+	}
+
+//Function For Manage Security
+	function manageowners()
+	{
+		$q=$this->db->get('flatowners');                            //databasename
+		$res=$q->result_array();
+		if($q->num_rows()>0)
+		{
+			return $res;
+		}
+		else
+		{
+			return 0;
+		}
+	}						
+}
+
+                            
